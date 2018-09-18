@@ -93,12 +93,16 @@ function shoot(){
         dx: 0 + cos * 5,
         dy: -2 + sin * 5,
         type: 'bullet',
-        // bullets are small
-        width: 2,
-        height: 2,
         color: 'white',
-        // live only 50 frames
+        radius: 1,
+        // live only 50 frames 
         ttl: 50,
+        render: function(){
+        this.context.fillStyle = this.color;
+        this.context.beginPath();
+        this.context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        this.context.fill();
+        },
         update: function(){
         this.advance();
         }
@@ -188,14 +192,20 @@ window.loop = kontra.gameLoop({
       }
     }
 
+
+
 // find collisions between the player bullets and enemy bombs
 for (var i = 0, bullet; bullet = liveBullets[i]; i++) {
-    objects = quadtree.get(bullet);
 
+    objects = quadtree.get(bullet);
+    
     for (var j = 0, obj; obj = objects[j]; j++) {
-      if (obj.type === 'nuke' && obj.collidesWith(bullet)) {
+        var disx = obj.x - bullet.x;
+        var disy = obj.y - bullet.y;
+        var distance = Math.sqrt(disx * disx + disy * disy);
+      if (obj.type === 'nuke' && distance < obj.radius +bullet.radius) {
         bullet.ttl = 0;
-        obj.ttl = 0;
+        obj.ttl = 0; 
         console.log("hit");
 
       }
