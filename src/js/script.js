@@ -175,8 +175,9 @@ window.loop = kontra.gameLoop({
     gun.update();
     bombs.update();
     flak.update();
+    cities.update();
     var liveBullets = flak.getAliveObjects();
-    var city = cities.getAliveObjects();
+    var liveCities = cities.getAliveObjects();
     quadtree.clear();
     quadtree.add(bombs.getAliveObjects(),cities.getAliveObjects(),flak.getAliveObjects());
     // randomly drop bombs
@@ -184,6 +185,7 @@ window.loop = kontra.gameLoop({
         createBomb('nuke');
       }
     // find collisions between the player ship and enemy bullets
+    //doesnt quite work yet
     objects = quadtree.get(gun);
 
     for (var i = 0, obj; obj = objects[i]; i++) {
@@ -191,26 +193,51 @@ window.loop = kontra.gameLoop({
         console.log("hit");
       }
     }
-
+ //gameover
+ if(liveCities == 0){
+  gameOver();
+  console.log("gameover")
+}
 
 
 // find collisions between the player bullets and enemy bombs
+//circle collisions
 for (var i = 0, bullet; bullet = liveBullets[i]; i++) {
 
     objects = quadtree.get(bullet);
-    
+
     for (var j = 0, obj; obj = objects[j]; j++) {
         var disx = obj.x - bullet.x;
         var disy = obj.y - bullet.y;
         var distance = Math.sqrt(disx * disx + disy * disy);
       if (obj.type === 'nuke' && distance < obj.radius +bullet.radius) {
         bullet.ttl = 0;
-        obj.ttl = 0; 
+        obj.ttl = 0;
         console.log("hit");
 
       }
     }
   }
+
+
+// find collisions between the cities and enemy bombs
+//circle collisions
+for (var i = 0, c; c = liveCities[i]; i++) {
+
+  objects = quadtree.get(c);
+
+  for (var j = 0, obj; obj = objects[j]; j++) {
+      var disx = obj.x - c.x;
+      var disy = obj.y - c.y;
+      var distance = Math.sqrt(disx * disx + disy * disy);
+    if (obj.type === 'nuke' && distance < obj.radius +c.radius) {
+      c.ttl = 0;
+      obj.ttl = 0;
+      console.log(liveCities[i]);
+
+    }
+  }
+}
 
 
   },
@@ -222,9 +249,24 @@ for (var i = 0, bullet; bullet = liveBullets[i]; i++) {
       gun.render();
   }
 });
+//pause game p
+kontra.keys.bind('p', function() {
+  if (loop.isStopped) {
+    loop.start();
+  }
+  else {
+    loop.stop();
+  }
+});
 
 
-
+/**
+   * Show the game over screen.
+   */
+  function gameOver() {
+    loop.stop();
+    document.getElementById('game-over').style.display = 'block';
+  }
 
 
 // start the loop
